@@ -49,25 +49,25 @@ Now, we are ready to deploy the business network to Hyperledger Fabric. This req
 
 ```
 cd ../
-composer network install --card PeerAdmin@hlfv1 --archiveFile clp-network@0.0.1.bna
+yarn composer network install --card PeerAdmin@hlfv1 --archiveFile clp-network@0.0.1.bna
 ```
 
 -   Start the business network:
 
 ```
-composer network start --networkName clp-network --networkVersion 0.0.1 --networkAdmin admin --networkAdminEnrollSecret adminpw --card PeerAdmin@hlfv1 --file networkadmin.card
+yarn composer network start --networkName clp-network --networkVersion 0.0.1 --networkAdmin admin --networkAdminEnrollSecret adminpw --card PeerAdmin@hlfv1 --file networkadmin.card
 ```
 
 -   Import the network administrator identity as a usable business network card:
 
 ```
-composer card import --file networkadmin.card
+yarn composer card import --file networkadmin.card
 ```
 
 -   Check that the business network has been deployed successfully, run the following command to ping the network:
 
 ```
-composer network ping --card admin@clp-network
+yarn composer network ping --card admin@clp-network
 ```
 
 If the command returns successfully, your setup is complete.

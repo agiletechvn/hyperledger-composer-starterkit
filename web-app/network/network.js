@@ -1,12 +1,20 @@
 const AdminConnection = require('composer-admin').AdminConnection;
-const BusinessNetworkConnection = require('composer-client').BusinessNetworkConnection;
-const { BusinessNetworkDefinition, CertificateUtil, IdCard } = require('composer-common');
+const BusinessNetworkConnection = require('composer-client')
+  .BusinessNetworkConnection;
+const {
+  BusinessNetworkDefinition,
+  CertificateUtil,
+  IdCard
+} = require('composer-common');
 
 //declate namespace
 const namespace = 'org.clp.biznet';
+const adminCard = 'admin@clp-network';
 
 //in-memory card store for testing so cards are not persisted to the file system
-const cardStore = require('composer-common').NetworkCardStoreManager.getCardStore( { type: 'composer-wallet-inmemory' } );
+const cardStore = require('composer-common').NetworkCardStoreManager.getCardStore(
+  { type: 'composer-wallet-inmemory' }
+);
 
 //admin connection to the blockchain, used to deploy the business network
 let adminConnection;
@@ -17,24 +25,22 @@ let businessNetworkConnection;
 let businessNetworkName = 'clp-network';
 let factory;
 
-
 /*
  * Import card for an identity
  * @param {String} cardName The card name to use for this identity
  * @param {Object} identity The identity details
  */
 async function importCardForIdentity(cardName, identity) {
-
   //use admin connection
   adminConnection = new AdminConnection();
   businessNetworkName = 'clp-network';
 
   //declare metadata
   const metadata = {
-      userName: identity.userID,
-      version: 1,
-      enrollmentSecret: identity.userSecret,
-      businessNetwork: businessNetworkName
+    userName: identity.userID,
+    version: 1,
+    enrollmentSecret: identity.userSecret,
+    businessNetwork: businessNetworkName
   };
 
   //get connectionProfile from json, create Idcard
@@ -45,13 +51,11 @@ async function importCardForIdentity(cardName, identity) {
   await adminConnection.importCard(cardName, card);
 }
 
-
 /*
 * Reconnect using a different identity
 * @param {String} cardName The identity to use
 */
 async function useIdentity(cardName) {
-
   //disconnect existing connection
   await businessNetworkConnection.disconnect();
 
@@ -60,10 +64,8 @@ async function useIdentity(cardName) {
   await businessNetworkConnection.connect(cardName);
 }
 
-
 //export module
 module.exports = {
-
   /*
   * Create Member participant and import card for identity
   * @param {String} cardId Import card id for member
@@ -73,12 +75,18 @@ module.exports = {
   * @param {String} phoneNumber Member phone number
   * @param {String} email Member email
   */
- registerMember: async function (cardId, accountNumber,firstName, lastName, email, phoneNumber) {
+  registerMember: async function(
+    cardId,
+    accountNumber,
+    firstName,
+    lastName,
+    email,
+    phoneNumber
+  ) {
     try {
-
       //connect as admin
       businessNetworkConnection = new BusinessNetworkConnection();
-      await businessNetworkConnection.connect('admin@clp-network');
+      await businessNetworkConnection.connect(adminCard);
 
       //get the factory for the business network
       factory = businessNetworkConnection.getBusinessNetwork().getFactory();
@@ -92,28 +100,31 @@ module.exports = {
       member.points = 0;
 
       //add member participant
-      const participantRegistry = await businessNetworkConnection.getParticipantRegistry(namespace + '.Member');
+      const participantRegistry = await businessNetworkConnection.getParticipantRegistry(
+        namespace + '.Member'
+      );
       await participantRegistry.add(member);
 
       //issue identity
-      const identity = await businessNetworkConnection.issueIdentity(namespace + '.Member#' + accountNumber, cardId);
+      const identity = await businessNetworkConnection.issueIdentity(
+        namespace + '.Member#' + accountNumber,
+        cardId
+      );
 
       //import card for identity
       await importCardForIdentity(cardId, identity);
 
       //disconnect
-      await businessNetworkConnection.disconnect('admin@clp-network');
+      await businessNetworkConnection.disconnect(adminCard);
 
       return true;
-    }
-    catch(err) {
+    } catch (err) {
       //print and return error
       console.log(err);
       var error = {};
       error.error = err.message;
       return error;
     }
-
   },
 
   /*
@@ -122,13 +133,11 @@ module.exports = {
   * @param {String} partnerId Partner Id as identifier on network
   * @param {String} name Partner name
   */
-  registerPartner: async function (cardId, partnerId, name) {
-
+  registerPartner: async function(cardId, partnerId, name) {
     try {
-
       //connect as admin
       businessNetworkConnection = new BusinessNetworkConnection();
-      await businessNetworkConnection.connect('admin@clp-network');
+      await businessNetworkConnection.connect(adminCard);
 
       //get the factory for the business network.
       factory = businessNetworkConnection.getBusinessNetwork().getFactory();
@@ -138,28 +147,31 @@ module.exports = {
       partner.name = name;
 
       //add partner participant
-      const participantRegistry = await businessNetworkConnection.getParticipantRegistry(namespace + '.Partner');
+      const participantRegistry = await businessNetworkConnection.getParticipantRegistry(
+        namespace + '.Partner'
+      );
       await participantRegistry.add(partner);
 
       //issue identity
-      const identity = await businessNetworkConnection.issueIdentity(namespace + '.Partner#' + partnerId, cardId);
+      const identity = await businessNetworkConnection.issueIdentity(
+        namespace + '.Partner#' + partnerId,
+        cardId
+      );
 
       //import card for identity
       await importCardForIdentity(cardId, identity);
 
       //disconnect
-      await businessNetworkConnection.disconnect('admin@clp-network');
+      await businessNetworkConnection.disconnect(adminCard);
 
       return true;
-    }
-    catch(err) {
+    } catch (err) {
       //print and return error
       console.log(err);
       var error = {};
       error.error = err.message;
       return error;
     }
-
   },
 
   /*
@@ -169,10 +181,13 @@ module.exports = {
   * @param {String} partnerId Partner Id of partner
   * @param {Integer} points Points value
   */
-  earnPointsTransaction: async function (cardId, accountNumber, partnerId, points) {
-
+  earnPointsTransaction: async function(
+    cardId,
+    accountNumber,
+    partnerId,
+    points
+  ) {
     try {
-
       //connect to network with cardId
       businessNetworkConnection = new BusinessNetworkConnection();
       await businessNetworkConnection.connect(cardId);
@@ -183,8 +198,16 @@ module.exports = {
       //create transaction
       const earnPoints = factory.newTransaction(namespace, 'EarnPoints');
       earnPoints.points = points;
-      earnPoints.member = factory.newRelationship(namespace, 'Member', accountNumber);
-      earnPoints.partner = factory.newRelationship(namespace, 'Partner', partnerId);
+      earnPoints.member = factory.newRelationship(
+        namespace,
+        'Member',
+        accountNumber
+      );
+      earnPoints.partner = factory.newRelationship(
+        namespace,
+        'Partner',
+        partnerId
+      );
 
       //submit transaction
       await businessNetworkConnection.submitTransaction(earnPoints);
@@ -193,15 +216,13 @@ module.exports = {
       await businessNetworkConnection.disconnect(cardId);
 
       return true;
-    }
-    catch(err) {
+    } catch (err) {
       //print and return error
       console.log(err);
       var error = {};
       error.error = err.message;
       return error;
     }
-
   },
 
   /*
@@ -211,10 +232,13 @@ module.exports = {
   * @param {String} partnerId Partner Id of partner
   * @param {Integer} points Points value
   */
-  usePointsTransaction: async function (cardId, accountNumber, partnerId, points) {
-
+  usePointsTransaction: async function(
+    cardId,
+    accountNumber,
+    partnerId,
+    points
+  ) {
     try {
-
       //connect to network with cardId
       businessNetworkConnection = new BusinessNetworkConnection();
       await businessNetworkConnection.connect(cardId);
@@ -225,8 +249,16 @@ module.exports = {
       //create transaction
       const usePoints = factory.newTransaction(namespace, 'UsePoints');
       usePoints.points = points;
-      usePoints.member = factory.newRelationship(namespace, 'Member', accountNumber);
-      usePoints.partner = factory.newRelationship(namespace, 'Partner', partnerId);
+      usePoints.member = factory.newRelationship(
+        namespace,
+        'Member',
+        accountNumber
+      );
+      usePoints.partner = factory.newRelationship(
+        namespace,
+        'Partner',
+        partnerId
+      );
 
       //submit transaction
       await businessNetworkConnection.submitTransaction(usePoints);
@@ -235,15 +267,13 @@ module.exports = {
       await businessNetworkConnection.disconnect(cardId);
 
       return true;
-    }
-    catch(err) {
+    } catch (err) {
       //print and return error
       console.log(err);
       var error = {};
       error.error = err.message;
-      return error
+      return error;
     }
-
   },
 
   /*
@@ -251,16 +281,16 @@ module.exports = {
   * @param {String} cardId Card id to connect to network
   * @param {String} accountNumber Account number of member
   */
-  memberData: async function (cardId, accountNumber) {
-
+  memberData: async function(cardId, accountNumber) {
     try {
-
       //connect to network with cardId
       businessNetworkConnection = new BusinessNetworkConnection();
       await businessNetworkConnection.connect(cardId);
 
       //get member from the network
-      const memberRegistry = await businessNetworkConnection.getParticipantRegistry(namespace + '.Member');
+      const memberRegistry = await businessNetworkConnection.getParticipantRegistry(
+        namespace + '.Member'
+      );
       const member = await memberRegistry.get(accountNumber);
 
       //disconnect
@@ -268,15 +298,13 @@ module.exports = {
 
       //return member object
       return member;
-    }
-    catch(err) {
+    } catch (err) {
       //print and return error
       console.log(err);
       var error = {};
       error.error = err.message;
       return error;
     }
-
   },
 
   /*
@@ -284,16 +312,16 @@ module.exports = {
   * @param {String} cardId Card id to connect to network
   * @param {String} partnerId Partner Id of partner
   */
-  partnerData: async function (cardId, partnerId) {
-
+  partnerData: async function(cardId, partnerId) {
     try {
-
       //connect to network with cardId
       businessNetworkConnection = new BusinessNetworkConnection();
       await businessNetworkConnection.connect(cardId);
 
       //get member from the network
-      const partnerRegistry = await businessNetworkConnection.getParticipantRegistry(namespace + '.Partner');
+      const partnerRegistry = await businessNetworkConnection.getParticipantRegistry(
+        namespace + '.Partner'
+      );
       const partner = await partnerRegistry.get(partnerId);
 
       //disconnect
@@ -301,43 +329,41 @@ module.exports = {
 
       //return partner object
       return partner;
-    }
-    catch(err) {
+    } catch (err) {
       //print and return error
       console.log(err);
       var error = {};
       error.error = err.message;
-      return error
+      return error;
     }
-
   },
 
   /*
   * Get all partners data
   * @param {String} cardId Card id to connect to network
   */
-  allPartnersInfo : async function (cardId) {
-
+  allPartnersInfo: async function(cardId) {
     try {
       //connect to network with cardId
       businessNetworkConnection = new BusinessNetworkConnection();
       await businessNetworkConnection.connect(cardId);
 
       //query all partners from the network
-      const allPartners = await businessNetworkConnection.query('selectPartners');
+      const allPartners = await businessNetworkConnection.query(
+        'selectPartners'
+      );
 
       //disconnect
       await businessNetworkConnection.disconnect(cardId);
 
       //return allPartners object
       return allPartners;
-    }
-    catch(err) {
+    } catch (err) {
       //print and return error
       console.log(err);
       var error = {};
       error.error = err.message;
-      return error
+      return error;
     }
   },
 
@@ -345,60 +371,57 @@ module.exports = {
   * Get all EarnPoints transactions data
   * @param {String} cardId Card id to connect to network
   */
-  earnPointsTransactionsInfo: async function (cardId) {
-
+  earnPointsTransactionsInfo: async function(cardId) {
     try {
       //connect to network with cardId
       businessNetworkConnection = new BusinessNetworkConnection();
       await businessNetworkConnection.connect(cardId);
 
       //query EarnPoints transactions on the network
-      const earnPointsResults = await businessNetworkConnection.query('selectEarnPoints');
+      const earnPointsResults = await businessNetworkConnection.query(
+        'selectEarnPoints'
+      );
 
       //disconnect
       await businessNetworkConnection.disconnect(cardId);
 
       //return earnPointsResults object
       return earnPointsResults;
-    }
-    catch(err) {
+    } catch (err) {
       //print and return error
       console.log(err);
       var error = {};
       error.error = err.message;
-      return error
+      return error;
     }
-
   },
 
   /*
   * Get all UsePoints transactions data
   * @param {String} cardId Card id to connect to network
   */
-  usePointsTransactionsInfo: async function (cardId) {
-
+  usePointsTransactionsInfo: async function(cardId) {
     try {
       //connect to network with cardId
       businessNetworkConnection = new BusinessNetworkConnection();
       await businessNetworkConnection.connect(cardId);
 
       //query UsePoints transactions on the network
-      const usePointsResults = await businessNetworkConnection.query('selectUsePoints');
+      const usePointsResults = await businessNetworkConnection.query(
+        'selectUsePoints'
+      );
 
       //disconnect
       await businessNetworkConnection.disconnect(cardId);
 
       //return usePointsResults object
       return usePointsResults;
-    }
-    catch(err) {
+    } catch (err) {
       //print and return error
       console.log(err);
       var error = {};
       error.error = err.message;
-      return error
+      return error;
     }
-
   }
-
-}
+};
