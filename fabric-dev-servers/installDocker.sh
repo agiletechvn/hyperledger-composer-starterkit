@@ -4,7 +4,7 @@ if [ ! `command -v docker` ];then
   echo 'Install docker...'
   
   if [ -n "$(command -v apt)" ];then  
-    sudo apt install docker.io
+    sudo apt install -y docker.io
   else 
     sudo yum install -y yum-utils device-mapper-persistent-data lvm2
     sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
