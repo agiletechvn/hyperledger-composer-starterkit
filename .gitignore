@@ -12,3 +12,6 @@ composer-logs
 
 *.bna
 *.card
+*.lock
+
+build
