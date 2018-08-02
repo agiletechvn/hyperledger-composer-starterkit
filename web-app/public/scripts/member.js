@@ -1,6 +1,7 @@
 var apiUrl = location.protocol + '//' + location.host + '/api/';
 var user = localStorage.getItem('user');
 var balances = localStorage.getItem('balances');
+
 balances = balances ? JSON.parse(balances) : {};
 
 if (user) {
@@ -9,6 +10,7 @@ if (user) {
   // default balance
   if (user.currencies === undefined || user.currencies === null) {
     user.currencies = 500;
+    balances[user.accountNumber.toString()] = user.currencies;
   }
 }
 
