@@ -7,11 +7,6 @@ balances = balances ? JSON.parse(balances) : {};
 if (user) {
   user = JSON.parse(user);
   user.currencies = balances[user.accountNumber.toString()];
-  // default balance
-  if (user.currencies === undefined || user.currencies === null) {
-    user.currencies = 500;
-    balances[user.accountNumber.toString()] = user.currencies;
-  }
 }
 
 function updateBalance(user) {
@@ -43,8 +38,24 @@ function showLoggedUser(data) {
       window.reload();
     });
 
+  // default balance
+  if (data.currencies !== 0 && !data.currencies) {
+    data.currencies = 500;
+    user.currencies = data.currencies;
+    updateBalance(user);
+  }
+
   //update heading
   $('.heading').html(function() {
+    var str = '<h2><b>' + data.firstName + ' ' + data.lastName + '</b></h2>';
+    str = str + '<h2><b>' + data.accountNumber + '</b></h2>';
+    str = str + '<h2><b>' + data.points + '</b></h2>';
+
+    return str;
+  });
+
+  //update wallet heading
+  $('#walletHeading').html(function() {
     var str = '<p><b>' + data.firstName + ' ' + data.lastName + '</b></p>';
     str += '<p><b>' + data.accountNumber + '</b></p>';
     str += '<p><b>' + data.points + '</b></p>';
