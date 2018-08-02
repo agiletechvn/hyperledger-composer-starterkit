@@ -29,7 +29,6 @@ $('.sign-in-member').click(function() {
 });
 
 function showLoggedUser(data) {
-  $('#headingSection').show();
   $('#loginSection').hide();
   $('#signOutEl,#signInEl').addClass('d-none');
   $('#signOutEl')
