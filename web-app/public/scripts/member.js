@@ -18,6 +18,7 @@ $(function() {
   if (user) {
     showLoggedUser(user);
   } else {
+    $('#loginSection').show();
     $('#signInEl').removeClass('d-none');
   }
 });
@@ -28,6 +29,8 @@ $('.sign-in-member').click(function() {
 });
 
 function showLoggedUser(data) {
+  $('#headingSection').show();
+  $('#loginSection').hide();
   $('#signOutEl,#signInEl').addClass('d-none');
   $('#signOutEl')
     .removeClass('d-none')
