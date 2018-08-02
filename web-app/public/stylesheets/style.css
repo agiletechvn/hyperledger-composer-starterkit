@@ -20,20 +20,25 @@
 
 /* Move down content because we have a fixed navbar that is 3.5rem tall */
 body {
-	padding-top: 3.5rem;
-  }
-  
+  padding-top: 3.5rem;
+}
+
 .inline {
   /*display: inline;*/
-  color: rgba(255,255,255,.5);
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.nav-tabs {
+  display: flex;
+  flex: 1;
 }
 
 .tab-width {
-  width: 300px;
+  flex: 1;
 }
 
 .tab-width a {
-  color: #acadaf;  
+  color: #acadaf;
 }
 
 .nav-item a {
@@ -49,10 +54,9 @@ body {
   font-weight: 400;
 }
 .marketing .col-lg-4 p {
-  margin-right: .75rem;
-  margin-left: .75rem;
+  margin-right: 0.75rem;
+  margin-left: 0.75rem;
 }
-
 
 /* Featurettes
 ------------------------- */
@@ -65,10 +69,8 @@ body {
 .featurette-heading {
   font-weight: 300;
   line-height: 1;
-  letter-spacing: -.05rem;
+  letter-spacing: -0.05rem;
 }
-
-
 
 /* Loader
 ------------------------- 
@@ -91,13 +93,21 @@ body {
 }
 
 @-webkit-keyframes spin {
-  0% { -webkit-transform: rotate(0deg); }
-  100% { -webkit-transform: rotate(360deg); }
+  0% {
+    -webkit-transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(360deg);
+  }
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* Add animation to "page content" */
@@ -106,19 +116,31 @@ body {
   -webkit-animation-name: animatebottom;
   -webkit-animation-duration: 1s;
   animation-name: animatebottom;
-  animation-duration: 1s
+  animation-duration: 1s;
 }
 
 @-webkit-keyframes animatebottom {
-  from { bottom:-100px; opacity:0 } 
-  to { bottom:0px; opacity:1 }
+  from {
+    bottom: -100px;
+    opacity: 0;
+  }
+  to {
+    bottom: 0px;
+    opacity: 1;
+  }
 }
 
-@keyframes animatebottom { 
-  from{ bottom:-100px; opacity:0 } 
-  to{ bottom:0; opacity:1 }
+@keyframes animatebottom {
+  from {
+    bottom: -100px;
+    opacity: 0;
+  }
+  to {
+    bottom: 0;
+    opacity: 1;
+  }
 }
 
-td { 
-  vertical-align: bottom;
+td {
+  vertical-align: top;
 }

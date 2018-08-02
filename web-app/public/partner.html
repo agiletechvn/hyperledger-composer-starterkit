@@ -13,7 +13,7 @@
 <body class="bg-light">
 
   <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
-    <a class="navbar-brand" href="/home">Customer Loyalty Program</a>
+    <a class="navbar-brand" href="/home">Customer Loyalty Program with Blockchain</a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -28,7 +28,11 @@
           <a class="nav-link" href="#">About</a>
         </li>
 
-        <li class="nav-item text-nowrap dropdown">
+        <li id="signOutEl" class="nav-item text-nowrap d-none">
+          <a class="nav-link" href="#">Sign-out</a>
+        </li>
+
+        <li id="signInEl" class="nav-item text-nowrap dropdown d-none">
           <a class="nav-link dropdown-toggle " href="#" id="dropdown01" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Sign-in</a>
           <div class="dropdown-menu" aria-labelledby="dropdown01">
             <a class="dropdown-item" href="/member">Member</a>
@@ -152,4 +156,5 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js" integrity="sha384-cs/chFZiN24E4KMATLdqdvsezGxaGsi4hLGOzlXwp5UZB1LY//20VyM2taTB4QvJ" crossorigin="anonymous"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js" integrity="sha384-uefMccjFJAIv6A+rW+L4AHf99KvxDjWSu1z9VI8SKNVmz4sk7buKt/6v9KI65qnm" crossorigin="anonymous"></script>
+<script src="/scripts/common.js"></script>
 <script src="/scripts/partner.js"></script>

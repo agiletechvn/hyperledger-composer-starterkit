@@ -1,19 +1,142 @@
-var apiUrl = location.protocol + '//' + location.host + "/api/";
+var apiUrl = location.protocol + '//' + location.host + '/api/';
+var user = localStorage.getItem('user');
+var balances = localStorage.getItem('balances');
+balances = balances ? JSON.parse(balances) : {};
+
+if (user) {
+  user = JSON.parse(user);
+  user.currencies = balances[user.accountNumber.toString()];
+  // default balance
+  if (user.currencies === undefined || user.currencies === null) {
+    user.currencies = 500;
+  }
+}
+
+function updateBalance(user) {
+  balances[user.accountNumber.toString()] = user.currencies;
+  localStorage.setItem('balances', JSON.stringify(balances));
+}
+
+$(function() {
+  if (user) {
+    showLoggedUser(user);
+  } else {
+    $('#signInEl').removeClass('d-none');
+  }
+});
 
 //check user input and call server
 $('.sign-in-member').click(function() {
   updateMember();
 });
 
-function updateMember() {
+function showLoggedUser(data) {
+  $('#signOutEl,#signInEl').addClass('d-none');
+  $('#signOutEl')
+    .removeClass('d-none')
+    .click(function() {
+      // update currencies
+      updateBalance(user);
+      localStorage.removeItem('user');
+      window.reload();
+    });
 
-  //get user input data
-  var formAccountNum = $('.account-number input').val();
+  //update heading
+  $('.heading').html(function() {
+    var str = '<p><b>' + data.firstName + ' ' + data.lastName + '</b></p>';
+    str += '<p><b>' + data.accountNumber + '</b></p>';
+    str += '<p><b>' + data.points + '</b></p>';
+
+    str += '<p><b>' + data.currencies + '$</b></p>';
+
+    str += '<p><b>' + data.currencies + ' VPoint</b></p>';
+
+    var walletAddress =
+      'bea90e7af711c43e47fa8bc0466154b0e13ff37aafdc7e444936d4918dd4a8b4';
+    str +=
+      '<p><b><a target="_blank" href="http://173.212.251.237:8000/api/balance/' +
+      walletAddress +
+      '">' +
+      walletAddress +
+      '</a></b></p>';
+
+    return str;
+  });
+
+  //update partners dropdown for earn points transaction
+  $('.earn-partner select').html(function() {
+    var str = '<option value="" disabled="" selected="">select</option>';
+    var partnersData = data.partnersData;
+    for (var i = 0; i < partnersData.length; i++) {
+      str =
+        str +
+        '<option partner-id=' +
+        partnersData[i].id +
+        '> ' +
+        partnersData[i].name +
+        '</option>';
+    }
+    return str;
+  });
+
+  //update partners dropdown for use points transaction
+  $('.use-partner select').html(function() {
+    var str = '<option value="" disabled="" selected="">select</option>';
+    var partnersData = data.partnersData;
+    for (var i = 0; i < partnersData.length; i++) {
+      str =
+        str +
+        '<option partner-id=' +
+        partnersData[i].id +
+        '> ' +
+        partnersData[i].name +
+        '</option>';
+    }
+    return str;
+  });
+
+  //update earn points transaction
+  $('.points-allocated-transactions').html(
+    renderTransactionTable(data.earnPointsResult)
+  );
+
+  //update use points transaction
+  $('.points-redeemed-transactions').html(
+    renderTransactionTable(data.usePointsResults)
+  );
+
+  //remove login section and display member page
+  document.getElementById('loginSection').style.display = 'none';
+  document.getElementById('transactionSection').style.display = 'block';
+}
+
+function getCardId() {
   var formCardId = $('.card-id input').val();
+  if (!formCardId) {
+    formCardId = prompt('Enter your form card id:', '123456789');
+    $('.card-id input').val(formCardId);
+  }
+
+  return formCardId;
+}
+
+function updateMember() {
+  //get user input data
+  var formAccountNum = user
+    ? user.accountNumber
+    : $('.account-number input').val();
+  var formCardId = getCardId();
 
   //create json data
-  var inputData = '{' + '"accountnumber" : "' + formAccountNum + '", ' + '"cardid" : "' + formCardId + '"}';
-  console.log(inputData)
+  var inputData =
+    '{' +
+    '"accountnumber" : "' +
+    formAccountNum +
+    '", ' +
+    '"cardid" : "' +
+    formCardId +
+    '"}';
+  console.log(inputData);
 
   //make ajax call
   $.ajax({
@@ -24,90 +147,35 @@ function updateMember() {
     contentType: 'application/json',
     beforeSend: function() {
       //display loading
-      document.getElementById('loader').style.display = "block";
+      document.getElementById('loader').style.display = 'block';
     },
     success: function(data) {
-
       //remove loader
-      document.getElementById('loader').style.display = "none";
+      document.getElementById('loader').style.display = 'none';
 
       //check data for error
       if (data.error) {
         alert(data.error);
         return;
       } else {
-
-        //update heading
-        $('.heading').html(function() {
-          var str = '<h2><b>' + data.firstName + ' ' + data.lastName + '</b></h2>';
-          str = str + '<h2><b>' + data.accountNumber + '</b></h2>';
-          str = str + '<h2><b>' + data.points + '</b></h2>';
-
-          return str;
-        });
-
-        //update partners dropdown for earn points transaction
-        $('.earn-partner select').html(function() {
-          var str = '<option value="" disabled="" selected="">select</option>';
-          var partnersData = data.partnersData;
-          for (var i = 0; i < partnersData.length; i++) {
-            str = str + '<option partner-id=' + partnersData[i].id + '> ' + partnersData[i].name + '</option>';
-          }
-          return str;
-        });
-
-        //update partners dropdown for use points transaction
-        $('.use-partner select').html(function() {
-          var str = '<option value="" disabled="" selected="">select</option>';
-          var partnersData = data.partnersData;
-          for (var i = 0; i < partnersData.length; i++) {
-            str = str + '<option partner-id=' + partnersData[i].id + '> ' + partnersData[i].name + '</option>';
-          }
-          return str;
-        });
-
-        //update earn points transaction
-        $('.points-allocated-transactions').html(function() {
-          var str = '';
-          var transactionData = data.earnPointsResult;
-
-          for (var i = 0; i < transactionData.length; i++) {
-            str = str + '<p>timeStamp: ' + transactionData[i].timestamp + '<br />partner: ' + transactionData[i].partner + '<br />member: ' + transactionData[i].member + '<br />points: ' + transactionData[i].points + '<br />transactionName: ' + transactionData[i].$class + '<br />transactionID: ' + transactionData[i].transactionId + '</p><br>';
-          }
-          return str;
-        });
-
-        //update use points transaction
-        $('.points-redeemed-transactions').html(function() {
-          var str = '';
-
-          var transactionData = data.usePointsResults;
-
-          for (var i = 0; i < transactionData.length; i++) {
-            str = str + '<p>timeStamp: ' + transactionData[i].timestamp + '<br />partner: ' + transactionData[i].partner + '<br />member: ' + transactionData[i].member + '<br />points: ' + transactionData[i].points + '<br />transactionName: ' + transactionData[i].$class + '<br />transactionID: ' + transactionData[i].transactionId + '</p><br>';
-          }
-          return str;
-        });
-
-        //remove login section and display member page
-        document.getElementById('loginSection').style.display = "none";
-        document.getElementById('transactionSection').style.display = "block";
+        // update user to database
+        user = data;
+        localStorage.setItem('user', JSON.stringify(data));
+        user.currencies = balances[user.accountNumber.toString()];
+        // update
+        showLoggedUser(user);
       }
-
     },
     error: function(jqXHR, textStatus, errorThrown) {
       //reload on error
-      alert("Error: Try again")
+      alert('Error: Try again');
       console.log(errorThrown);
       console.log(textStatus);
       console.log(jqXHR);
     },
-    complete: function() {
-
-    }
+    complete: function() {}
   });
 }
-
 
 $('.earn-points-30').click(function() {
   earnPoints(30);
@@ -121,25 +189,36 @@ $('.earn-points-200').click(function() {
   earnPoints(200);
 });
 
-
 //check user input and call server
 $('.earn-points-transaction').click(function() {
-
   var formPoints = $('.earnPoints input').val();
   earnPoints(formPoints);
 });
 
-
 function earnPoints(formPoints) {
-
   //get user input data
-  var formAccountNum = $('.account-number input').val();
-  var formCardId = $('.card-id input').val();
-  var formPartnerId = $('.earn-partner select').find(":selected").attr('partner-id');
+  var formAccountNum = user.accountNumber;
+  var formCardId = getCardId();
+  var formPartnerId = $('.earn-partner select')
+    .find(':selected')
+    .attr('partner-id');
 
   //create json data
-  var inputData = '{' + '"accountnumber" : "' + formAccountNum + '", ' + '"cardid" : "' + formCardId + '", ' + '"points" : "' + formPoints + '", ' + '"partnerid" : "' + formPartnerId + '"}';
-  console.log(inputData)
+  var inputData =
+    '{' +
+    '"accountnumber" : "' +
+    formAccountNum +
+    '", ' +
+    '"cardid" : "' +
+    formCardId +
+    '", ' +
+    '"points" : "' +
+    formPoints +
+    '", ' +
+    '"partnerid" : "' +
+    formPartnerId +
+    '"}';
+  console.log(inputData);
 
   //make ajax call
   $.ajax({
@@ -150,13 +229,12 @@ function earnPoints(formPoints) {
     contentType: 'application/json',
     beforeSend: function() {
       //display loading
-      document.getElementById('loader').style.display = "block";
-      document.getElementById('infoSection').style.display = "none";
+      document.getElementById('loader').style.display = 'block';
+      document.getElementById('infoSection').style.display = 'none';
     },
     success: function(data) {
-
-      document.getElementById('loader').style.display = "none";
-      document.getElementById('infoSection').style.display = "block";
+      document.getElementById('loader').style.display = 'none';
+      document.getElementById('infoSection').style.display = 'block';
 
       //check data for error
       if (data.error) {
@@ -165,19 +243,20 @@ function earnPoints(formPoints) {
       } else {
         //update member page and notify successful transaction
         updateMember();
+        // update balances
+        user.currencies += parseInt(formPoints);
+        updateBalance(user);
+        // show alert
         alert('Transaction successful');
       }
-
-
     },
     error: function(jqXHR, textStatus, errorThrown) {
-      alert("Error: Try again")
+      alert('Error: Try again');
       console.log(errorThrown);
       console.log(textStatus);
       console.log(jqXHR);
     }
   });
-
 }
 
 $('.use-points-50').click(function() {
@@ -192,24 +271,36 @@ $('.use-points-200').click(function() {
   usePoints(150);
 });
 
-
 //check user input and call server
 $('.use-points-transaction').click(function() {
   var formPoints = $('.usePoints input').val();
   usePoints(formPoints);
 });
 
-
 function usePoints(formPoints) {
-
   //get user input data
-  var formAccountNum = $('.account-number input').val();
-  var formCardId = $('.card-id input').val();
-  var formPartnerId = $('.use-partner select').find(":selected").attr('partner-id');
+  var formAccountNum = user.accountNumber;
+  var formCardId = getCardId();
+  var formPartnerId = $('.use-partner select')
+    .find(':selected')
+    .attr('partner-id');
 
   //create json data
-  var inputData = '{' + '"accountnumber" : "' + formAccountNum + '", ' + '"cardid" : "' + formCardId + '", ' + '"points" : "' + formPoints + '", ' + '"partnerid" : "' + formPartnerId + '"}';
-  console.log(inputData)
+  var inputData =
+    '{' +
+    '"accountnumber" : "' +
+    formAccountNum +
+    '", ' +
+    '"cardid" : "' +
+    formCardId +
+    '", ' +
+    '"points" : "' +
+    formPoints +
+    '", ' +
+    '"partnerid" : "' +
+    formPartnerId +
+    '"}';
+  console.log(inputData);
 
   //make ajax call
   $.ajax({
@@ -220,13 +311,12 @@ function usePoints(formPoints) {
     contentType: 'application/json',
     beforeSend: function() {
       //display loading
-      document.getElementById('loader').style.display = "block";
-      document.getElementById('infoSection').style.display = "none";
+      document.getElementById('loader').style.display = 'block';
+      document.getElementById('infoSection').style.display = 'none';
     },
     success: function(data) {
-
-      document.getElementById('loader').style.display = "none";
-      document.getElementById('infoSection').style.display = "block";
+      document.getElementById('loader').style.display = 'none';
+      document.getElementById('infoSection').style.display = 'block';
 
       //check data for error
       if (data.error) {
@@ -235,17 +325,18 @@ function usePoints(formPoints) {
       } else {
         //update member page and notify successful transaction
         updateMember();
+        // update balances
+        user.currencies -= parseInt(formPoints);
+        updateBalance(user);
         alert('Transaction successful');
       }
-
     },
     error: function(jqXHR, textStatus, errorThrown) {
-      alert("Error: Try again")
+      alert('Error: Try again');
       console.log(errorThrown);
       console.log(textStatus);
       console.log(jqXHR);
     },
     complete: function() {}
   });
-
 }
